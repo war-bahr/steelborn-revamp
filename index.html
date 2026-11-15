@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#05070c" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="description" content="Steelborn: build a custom battle mech from dozens of parts and carve through drones, brutes and a siege-class boss." />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Steelborn" />
+  <title>Steelborn Revamp</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>html,body{background:#05070c;height:100%;margin:0;overflow:hidden}#boot{z-index:99;color:#cfe8ff;letter-spacing:.2em;background:radial-gradient(circle at 50% 40%,#0f1a2a,#05070c 70%);flex-direction:column;justify-content:center;align-items:center;font:600 14px system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Noto Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif;transition:opacity .6s;display:flex;position:fixed;top:0;bottom:0;left:0;right:0}#boot.hide{opacity:0;pointer-events:none}#boot .ring{border:3px solid #33d6ff33;border-top-color:#33d6ff;border-radius:50%;width:54px;height:54px;margin-bottom:18px;animation:.9s linear infinite sp}@keyframes sp{to{transform:rotate(360deg)}}</style>
+  <script type="module" crossorigin src="/steelborn-revamp/assets/index-BVsJbZId.js"></script>
+  <link rel="stylesheet" crossorigin href="/steelborn-revamp/assets/index-BJuqSA60.css">
+</head>
+<body>
+  <div id="boot"><div class="ring"></div><div>STEELBORN REVAMP</div><div id="boot-sub" style="opacity:.6;font-size:11px;margin-top:8px">BOOTING REACTOR…</div></div>
+  <canvas id="c"></canvas>
+  <div id="loading"><div class="ring"></div><b>DEPLOYING TO ASHGATE…</b><small>Building the city</small></div>
+
+  <!-- TITLE -->
+  <div id="title" class="screen hidden">
+    <div class="t-logo"><small>ANIME MECH ARENA · REVAMP</small><h1>STEEL<span>BORN</span></h1><p>Build it. Overheat it. Break them.</p></div>
+    <div class="t-menu">
+      <button id="tDeploy" class="btn pri big">ARENA<small>QUICK FIGHT · <span id="tBuild">VANGUARD</span></small></button>
+      <button id="tHangar" class="btn">HANGAR<small id="tUnl">0 PARTS</small></button>
+      <div class="row"><button id="tHow" class="btn sm">HOW TO PLAY</button><button id="tSet" class="btn sm">SETTINGS</button></div>
+    </div>
+  </div>
+
+  <!-- GARAGE -->
+  <div id="garage" class="screen hidden">
+    <div id="gView"></div>
+    <div class="g-top">
+      <button id="gBack" class="ic" aria-label="Back">‹</button>
+      <div class="g-title"><small>HANGAR · SLOT <span id="gSlotN">1</span></small><b id="gName">VANGUARD</b></div>
+      <span id="gScrap" class="scrap-chip">⛭ 0</span><button id="gDeploy" class="btn pri">DEPLOY ▸</button>
+    </div>
+    <div id="statPanel"></div>
+    <div id="gToasts"></div>
+    <div class="g-sheet">
+      <div class="tabs"><button data-tab="parts" class="on">PARTS</button><button data-tab="paint">PAINT</button><button data-tab="builds">BUILDS</button><button data-tab="pilot">PILOT</button></div>
+      <div id="tabParts">
+        <div id="slotChips"></div>
+        <div id="partCount"></div>
+        <div id="partList"></div>
+        <div id="partInfo"></div>
+      </div>
+      <div id="tabPaint" hidden></div>
+      <div id="tabBuilds" hidden></div>
+      <div id="tabPilot" hidden><div class="seg pl-sub"><button data-psub="profile" class="on">PROFILE</button><button data-psub="perks">PERKS</button></div><div id="plBody"></div></div>
+    </div>
+  </div>
+
+  <!-- ARENA HUD -->
+  <div id="hud" class="screen hidden">
+    <div id="vignette"></div>
+    <div id="cine"><i></i><i></i></div>
+    <div class="h-top">
+      <div class="h-bars">
+        <div class="hb sh"><i id="shFill"></i><label>SHIELD</label><b id="shTxt">0</b></div>
+        <div class="hb hp"><i id="hpLag"></i><i id="hpFill"></i><label>HP</label><b id="hpTxt">0</b></div>
+        <div class="hb en"><i id="enFill"></i><label>ENERGY</label></div>
+        <div class="hb heat" id="heatBox"><i id="heatFill"></i><label>CORE HEAT</label><em>OVERDRIVE</em></div>
+      </div>
+      <button id="pauseBtn" class="ic" aria-label="Pause">II</button>
+    </div>
+    <div id="waveTxt"></div>
+    <div id="scrapTxt"></div>
+    <div id="objTrack"></div>
+    <div id="minimap"><canvas id="mmCanvas" width="224" height="224"></canvas><i id="mmN">N</i><button id="mapBtn">MAP</button></div>
+    <div id="capture"><b id="capTitle">CAPTURING</b><div><i id="capFill"></i></div></div>
+    <button id="bAct" class="btn pri"></button>
+    <div id="bossBar"><div id="bossName">WARDEN</div><div class="bb"><i id="bossLag"></i><i id="bossFill"></i></div><div class="bsh"><i id="bossSh"></i></div><div class="bst"><i id="bossStag"></i></div><div id="bossPips"></div></div>
+    <div id="combo"><b id="comboN">0</b><span>HITS</span><i id="comboR"></i></div>
+    <div id="moveName"></div>
+    <div id="banner"></div>
+    <div id="msg"></div>
+    <div id="toasts"></div>
+    <div id="nums"></div>
+    <div id="arrows"></div>
+    <div id="ebars"></div>
+    <div id="reticle"><i></i><i></i><i></i><i></i><b></b></div>
+    <div id="fps" hidden></div>
+    <div id="radio"><img id="radioFace" alt=""><div><b id="radioName"></b><p id="radioText"></p></div></div>
+    <div id="footHud"><b id="footT">25</b><span id="footTo">RUN TO THE GARAGE</span><div class="fh"><i id="footHp"></i></div></div>
+    <button id="ckSkip" class="btn">SKIP ▸▸</button>
+    <div id="zoomCtl"><button id="zIn" aria-label="Zoom in">+</button><button id="zOut" aria-label="Zoom out">−</button><button id="zReset" aria-label="Reset camera">⟲</button><i id="zLvl"></i></div>
+    <div id="stickZone"><div id="stickBase"><div id="stickKnob"></div></div><span class="sz-hint">MOVE</span></div>
+    <div id="btns">
+      <button data-a="finisher" id="bFin"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="48" class="bg"/><circle id="finRing" cx="50" cy="50" r="48" class="fg"/></svg><span id="finTxt">FINISH</span></button>
+      <button data-a="guard" id="bGuard"><span>GUARD</span></button>
+      <button data-a="heavy" id="bHeavy"><span>HEAVY</span></button>
+      <button data-a="dash" id="bDash"><span>DASH</span></button>
+      <button data-a="fire" id="bFire"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" class="bg"/><circle id="fireRing" cx="50" cy="50" r="46" class="fg"/></svg><span>FIRE</span><em id="fireAmmo"></em></button>
+      <button data-a="light" id="bLight"><span>LIGHT</span><em>HOLD·HEAVY</em></button>
+      <button data-a="parry" id="bParry"><span>PARRY</span></button>
+      <button data-a="ability" id="bAbil"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" class="bg"/><circle id="abRing" cx="50" cy="50" r="46" class="fg"/></svg><i id="abGlyph">⤓</i><span id="abName">JET SLAM</span><b id="abCd"></b></button>
+    </div>
+  </div>
+
+  <!-- REVAMP: finisher cut-in -->
+  <div id="cutin" aria-hidden="true"><div class="ci-flash"></div><div class="ci-band"><div class="ci-lines"></div><div class="ci-face"><img id="ciFace" alt=""></div><div class="ci-txt"><small id="ciPilot">KAITO</small><b id="ciName">IRON BREAKER</b></div></div><div class="ci-band2"></div></div>
+  <div id="speedlines"></div>
+
+  <!-- MODALS -->
+  <div id="survPick" class="modal">
+    <div class="panel sp"><small>WAVE <span id="spWave">5</span> SURVIVED · CHOOSE ONE</small><h2>FIELD UPGRADE</h2><div id="spCards"></div></div>
+  </div>
+  <div id="results" class="modal">
+    <div class="panel res">
+      <small>OPERATION REPORT</small>
+      <h2 id="rTitle">VICTORY</h2>
+      <div class="grade"><span>GRADE</span><b id="rGrade">A</b></div>
+      <div id="rStats" class="grid"></div>
+      <h3>PARTS RECOVERED</h3>
+      <div id="rParts"></div>
+      <div class="row"><button id="rRetry" class="btn pri">REDEPLOY</button><button id="rHangar" class="btn">HANGAR</button></div>
+    </div>
+  </div>
+  <div id="pause" class="modal"><div class="panel"><h2>PAUSED</h2><div class="col"><button id="pResume" class="btn pri">RESUME</button><button id="pMap" class="btn">REGION MAP</button><button id="pRetry" class="btn">RESTART</button><button id="pQuit" class="btn">QUIT TO HANGAR</button></div></div></div>
+  <div id="mapScreen" class="modal"><div class="panel mapp">
+    <div class="mp-h"><small>REGION 1</small><h2>ASHGATE</h2></div>
+    <div class="mp-wrap"><canvas id="mapCanvas" width="640" height="840"></canvas></div>
+    <div id="mapLegend"></div>
+    <label class="lbl">FAST TRAVEL · GARAGES</label>
+    <div id="ftList" class="col"></div>
+    <button class="btn" id="mapClose">CLOSE</button>
+  </div></div>
+  <div id="intro" class="modal"><div class="panel intro">
+    <div class="in-who"><img id="inFace" alt=""><div><b>VEX · HANDLER</b><br><small id="inStep">TRANSMISSION 1/3</small></div></div>
+    <h2 id="inTitle">ASHGATE</h2>
+    <p id="inText"></p>
+    <div class="row"><button id="inSkip" class="btn">SKIP</button><button id="inNext" class="btn pri">NEXT ▸</button></div>
+  </div></div>
+  <div id="pilotModal" class="modal"><div class="panel pilotp"><div id="pmBody"></div></div></div>
+  <div id="pilotChoice" class="modal"><div class="panel choice">
+    <small id="pcRole">ELITE PILOT EJECTED</small>
+    <div class="pc-top"><img id="pcFace" alt=""><div><b id="pcName">PILOT</b><p id="pcLine"></p></div></div>
+    <div class="pc-opts"><button id="pcCapture" class="btn pri"><b>CAPTURE</b><span id="pcCapS">+150 scrap · Rare+ part</span></button><button id="pcRelease" class="btn"><b>RELEASE</b><span id="pcRelS">+120 pilot XP · +1 reputation</span></button></div>
+  </div></div>
+  <div id="clearScreen" class="modal"><div class="panel res win">
+    <small>CAMPAIGN · REGION 1</small><h2>REGION SECURED</h2>
+    <p class="hint" id="clText"></p>
+    <h3>BOSS PARTS RECOVERED</h3><div id="clParts"></div>
+    <div class="row"><button id="clGo" class="btn pri">KEEP EXPLORING</button><button id="clHangar" class="btn">HUB GARAGE</button></div>
+  </div></div>
+  <div id="settings" class="modal"><div class="panel"><h2>SETTINGS</h2><label class="lbl">GRAPHICS QUALITY</label><div id="setQ" class="seg"></div><p id="setCur" class="hint"></p><label class="chk"><input type="checkbox" id="setFps"> Show FPS counter</label><label class="chk"><input type="checkbox" id="setCockpit"> Play cockpit deploy sequence</label><p class="hint">Auto picks a level for your phone and lowers resolution, then bloom, if combat drops below ~42 FPS. Changing quality reloads the game.</p><button class="btn" data-close>DONE</button></div></div>
+  <div id="howto" class="modal"><div class="panel how">
+    <h2>HOW TO PLAY</h2>
+    <div class="hw"><b>HANGAR</b><p>Swap Head, Core, each Arm, Legs, Back and a weapon in each hand. Every part changes armor, weight, speed, energy, damage and reach. Drag the mech to spin it, pinch to zoom. Paint it, pick a finish, wear and a decal. You have 3 build slots, saved automatically.</p></div>
+    <div class="hw"><b>MOVE &amp; FIGHT</b><p>Drag on the left half to move. <em>LIGHT</em> chains a combo that alternates arms. <em>HEAVY</em> is your weapon's big move; after 2+ lights it becomes a stronger <em>Ender</em>. Two different weapon types unlock a 4th-hit <em>Mixed Combo</em>.</p></div>
+    <div class="hw"><b>DEFEND</b><p><em>DASH</em> makes you untouchable for a moment (costs energy). Hold <em>GUARD</em> to block. Tap GUARD right before a hit lands to <em>PARRY</em>: it staggers the attacker and bats drone shots back. Red circles on the ground mean a slam is coming.</p></div>
+    <div class="hw"><b>OVERDRIVE</b><p>Attacking heats your core. More heat means more damage, and the red zone is Overdrive. Hit 100% and you overheat and stall to vent. Cores and coolers change how fast you heat and cool.</p></div>
+    <div class="hw"><b>FINISHER</b><p>Hits, kills and parries fill the ring on <em>FINISH</em>. When it glows, tap for a slow-motion execution on the nearest enemy.</p></div>
+    <div class="hw"><b>PARTS</b><p>Enemies drop part crates. Walk over them, or they fly to you when the wave ends. The Warden boss drops its own signature parts.</p></div>
+    <div class="hw"><b>RARITY &amp; SCRAP</b><p>Parts come in <em>Common</em>, <em>Rare</em>, <em>Epic</em>, <em>Legendary</em> and <em>Boss</em> tiers; higher tiers boost the part's stats. Kills and salvage give scrap. Spend it in the hangar to upgrade a part up to +5. A duplicate of a higher tier upgrades your copy; any other duplicate turns into scrap.</p></div>
+    <div class="hw"><b>ABILITY</b><p>Your back pack has an active ability on the button above DASH. Each pack has its own: jet slam, grapple dash, EMP, missiles, shield bubble, overdrive, decoy or orbital lance. It recharges on a cooldown.</p></div>
+    <div class="hw"><b>CAMPAIGN</b><p>Explore Ashgate, a ruined city. Capture the two outposts to unlock fast-travel garages and open the Monarch's fortress. Named elites and side jobs drop rare parts. Tap MAP to see the region and travel between garages.</p></div>
+    <button class="btn pri" data-close>GOT IT</button>
+  </div></div>
+</body>
+</html>
